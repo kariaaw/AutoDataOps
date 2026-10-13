@@ -1,0 +1,87 @@
+# ==========================================
+# AutoDataOps - Git Ignore Policy
+# ==========================================
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Secrets and credentials
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+credentials.json
+secrets/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Node.js
+node_modules/
+.next/
+.npm/
+*.tsbuildinfo
+
+# Go
+vendor/
+*.test
+coverage.out
+
+# Build artifacts
+dist/
+build/
+target/
+bin/
+
+# Logs
+*.log
+logs/
+
+# Test coverage
+coverage/
+htmlcov/
+.coverage
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.swp
+*.swo
+
+# Local databases
+*.db
+*.sqlite
+*.sqlite3
+
+# Local datasets
+data/
+datasets/
+
+# IDE settings
+.idea/
+.vscode/
+
+# Operating system
+.DS_Store
+Thumbs.db
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+!*.tfvars.example
+
+# Local backups
+*.bak
+*.backup
