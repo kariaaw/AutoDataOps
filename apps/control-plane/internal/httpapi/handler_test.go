@@ -1,6 +1,7 @@
 package httpapi
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -35,7 +36,7 @@ func TestHealthEndpoints(t *testing.T) {
 
 			recorder := httptest.NewRecorder()
 
-			NewHandler().ServeHTTP(recorder, request)
+			NewHandler(func(context.Context) error { return nil }).ServeHTTP(recorder, request)
 
 			if recorder.Code != http.StatusOK {
 				t.Fatalf(
@@ -92,7 +93,7 @@ func TestUnknownEndpoint(t *testing.T) {
 
 	recorder := httptest.NewRecorder()
 
-	NewHandler().ServeHTTP(recorder, request)
+	NewHandler(func(context.Context) error { return nil }).ServeHTTP(recorder, request)
 
 	if recorder.Code != http.StatusNotFound {
 		t.Fatalf(
@@ -111,7 +112,7 @@ func TestUnsupportedMethod(t *testing.T) {
 
 	recorder := httptest.NewRecorder()
 
-	NewHandler().ServeHTTP(recorder, request)
+	NewHandler(func(context.Context) error { return nil }).ServeHTTP(recorder, request)
 
 	if recorder.Code != http.StatusMethodNotAllowed {
 		t.Fatalf(
