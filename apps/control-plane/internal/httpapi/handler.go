@@ -1,8 +1,10 @@
 package httpapi
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
+	"time"
 )
 
 const serviceName = "autodataops-control-plane"
@@ -16,17 +18,28 @@ type HealthResponse struct {
 //
 // Health endpoints intentionally expose no
 // credentials or internal system configuration.
-func NewHandler() http.Handler {
+func NewHandler(checkReady func(context.Context) error) http.Handler {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("GET /health/live", func(w http.ResponseWriter, r *http.Request) {
-		writeHealth(w, "alive")
+		writeHealth(w, http.StatusOK, "alive")
 	})
 
 	mux.HandleFunc("GET /health/ready", func(w http.ResponseWriter, r *http.Request) {
-		// Bootstrap readiness only.
-		// Dependency checks will be added later.
-		writeHealth(w, "ready")
+		if checkReady == nil {
+			writeHealth(w, http.StatusServiceUnavailable, "not_ready")
+			return
+		}
+
+		ctx, cancel := context.WithTimeout(r.Context(), 2*time.Second)
+		defer cancel()
+
+		if err := checkReady(ctx); err != nil {
+			writeHealth(w, http.StatusServiceUnavailable, "not_ready")
+			return
+		}
+
+		writeHealth(w, http.StatusOK, "ready")
 	})
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -38,9 +51,9 @@ func NewHandler() http.Handler {
 	})
 }
 
-func writeHealth(w http.ResponseWriter, status string) {
+func writeHealth(w http.ResponseWriter, code int, status string) {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	w.WriteHeader(http.StatusOK)
+	w.WriteHeader(code)
 
 	response := HealthResponse{
 		Status:  status,

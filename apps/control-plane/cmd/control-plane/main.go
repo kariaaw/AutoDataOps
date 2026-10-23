@@ -13,6 +13,7 @@ import (
 	"syscall"
 	"time"
 
+	"autodataops.local/control-plane/internal/database"
 	"autodataops.local/control-plane/internal/httpapi"
 )
 
@@ -39,9 +40,18 @@ func run(logger *slog.Logger) error {
 		address = "127.0.0.1:8080"
 	}
 
+	pool, err := database.Open(
+		context.Background(),
+		os.Getenv("AUTODATAOPS_DATABASE_URL"),
+	)
+	if err != nil {
+		return fmt.Errorf("initialize database: %w", err)
+	}
+	defer pool.Close()
+
 	server := &http.Server{
 		Addr:              address,
-		Handler:           httpapi.NewHandler(),
+		Handler:           httpapi.NewHandler(pool.Ping),
 		ReadHeaderTimeout: 10 * time.Second,
 		ReadTimeout:       15 * time.Second,
 		WriteTimeout:      30 * time.Second,

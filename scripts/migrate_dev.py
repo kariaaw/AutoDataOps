@@ -13,6 +13,7 @@ Features:
 """
 
 import hashlib
+import os
 import subprocess
 import sys
 
@@ -40,10 +41,23 @@ VERSION = 1
 
 def sql(query: str) -> str:
 
+    target = os.environ.get("AUTODATAOPS_MIGRATION_TARGET", "main")
+    if target not in ("main", "lab", "concurrency"):
+        raise RuntimeError("Invalid migration target")
+
+    databases = {
+        "lab": "autodataops_migration_lab",
+        "concurrency": "autodataops_concurrency_lab",
+    }
+
+    database = databases.get(target)
+    options = ["-e", f"POSTGRES_DB={database}"] if database else []
+
     command = [
         "docker",
         "exec",
         "-i",
+        *options,
         CONTAINER,
         "sh",
         "-ec",
